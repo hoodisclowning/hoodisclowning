@@ -1,31 +1,21 @@
-name: Node.js CI
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
-  build:
-
-    runs-on: windows-latest
+  test:
+    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node_version: ['18.x', '20.x']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node_version }}
+      uses: actions/setup-node@v4
       with:
-        node-version: 'v20.15.0' # or the version you are using
+        node-version: ${{ matrix.node_version }}
 
-    - name: Install dependencies
-      run: npm install
-      shell: pwsh
-
-    - name: Run tests
-      run: npm test
-      shell: pwsh
+    - name: npm install, build and test
+      run: |
+        npm install
+        npm run build --if-present
+        npm test
